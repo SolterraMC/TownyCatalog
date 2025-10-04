@@ -1,0 +1,19 @@
+# TownyCatalog Configuration
+
+# Filtering Options
+filters:
+  # Only show plots from towns that are marked as "open"
+  # When false, plots from closed (invite-only) towns will also be shown
+  require-town-open: true
+
+  # Only show plots from towns that are marked as "public"
+  # When false, plots from private towns will also be shown
+  require-town-public: true
+
+  # Only show plots that the player can afford
+  # When false, all plots for sale will be shown regardless of price
+  require-affordable: false
+
+  # Only show residential plots
+  # When false, all plot types (commercial, embassy, etc.) will be shown
+  residential-only: false

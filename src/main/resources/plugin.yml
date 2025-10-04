@@ -1,0 +1,22 @@
+name: TownyCatalog
+version: '1.0-SNAPSHOT'
+main: org.solterra.townyCatalog.TownyCatalog
+api-version: '1.21'
+depend: [Towny]
+description: A GUI catalog system for browsing and purchasing Towny plots
+author: Solterra
+
+commands:
+  tcatalog:
+    description: TownyCatalog management commands
+    usage: /<command> [info|reload]
+    permission: townycatalog.use
+    aliases: [townycatalog]
+
+permissions:
+  townycatalog.use:
+    description: Allows players to open the plot catalog and view info
+    default: true
+  townycatalog.admin:
+    description: Allows reloading the plugin configuration
+    default: op
