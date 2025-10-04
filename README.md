@@ -14,6 +14,16 @@ A GUI catalog plugin for browsing and purchasing Towny plots. TownyCatalog provi
 
 By default, only plots from public and open towns are shown.
 
+## Screenshots
+
+**Town Selection Menu**
+
+![Town Selection](.github/resources/towny-catalog-towns.png)
+
+**Plot Display**
+
+![Plot Display](.github/resources/towny-catalog-plots.png)
+
 ## Installation
 
 1. Ensure Towny is installed and running on your server
