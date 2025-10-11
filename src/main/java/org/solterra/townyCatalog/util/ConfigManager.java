@@ -15,6 +15,17 @@ public class ConfigManager {
         this.plugin = plugin;
         plugin.saveDefaultConfig();
         this.config = plugin.getConfig();
+
+        // Add default values programmatically to ensure new options appear in existing configs
+        config.addDefault("plots.show-custom-plot-name", true);
+        config.addDefault("filters.require-town-open", true);
+        config.addDefault("filters.require-town-public", true);
+        config.addDefault("filters.require-affordable", false);
+        config.addDefault("filters.residential-only", false);
+
+        // Merge defaults into existing config without overwriting user values
+        config.options().copyDefaults(true);
+        plugin.saveConfig();
     }
 
     /**
@@ -24,6 +35,8 @@ public class ConfigManager {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
     }
+
+
 
     /**
      * @return true if only plots from open towns should be shown
@@ -51,5 +64,9 @@ public class ConfigManager {
      */
     public boolean residentialOnly() {
         return config.getBoolean("filters.residential-only", false);
+    }
+
+    public boolean showCustomPlotNames() {
+        return config.getBoolean("plots.show-custom-plot-name", true);
     }
 }

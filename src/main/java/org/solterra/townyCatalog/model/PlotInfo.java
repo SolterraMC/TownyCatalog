@@ -9,6 +9,7 @@ import org.bukkit.Location;
  */
 public class PlotInfo {
     private final TownBlock plotBlock;
+    private final String plotName;
     private final String townName;
     private final double price;
     private final TownBlockType plotType;
@@ -17,9 +18,10 @@ public class PlotInfo {
     private final int plotZ;
     private final String worldName;
 
-    public PlotInfo(TownBlock plotBlock, String townName, double price, TownBlockType plotType,
+    public PlotInfo(TownBlock plotBlock,String plotName, String townName, double price, TownBlockType plotType,
                     Location plotLocation, int plotX, int plotZ, String worldName) {
         this.plotBlock = plotBlock;
+        this.plotName = plotName;
         this.townName = townName;
         this.price = price;
         this.plotType = plotType;
@@ -39,6 +41,14 @@ public class PlotInfo {
 
     public String getWorldName() {
         return worldName;
+    }
+
+    public String getPlotName() {
+        if (plotName == null || plotName.isEmpty()) {
+            return townName + " Plot";
+        }
+
+        return plotName;
     }
 
     public String getFormattedPrice() {

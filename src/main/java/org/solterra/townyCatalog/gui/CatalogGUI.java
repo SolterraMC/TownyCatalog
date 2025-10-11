@@ -147,7 +147,7 @@ public class CatalogGUI {
         ItemMeta meta = item.getItemMeta();
 
         // Set display name
-        meta.displayName(Component.text(plotInfo.getTownName() + " Plot", NamedTextColor.GREEN)
+        meta.displayName(Component.text(plotInfo.getPlotName(), NamedTextColor.GREEN)
                 .decoration(TextDecoration.ITALIC, false));
 
         // Create lore
@@ -162,9 +162,9 @@ public class CatalogGUI {
         lore.add(Component.text("Location: ", NamedTextColor.GRAY)
                 .append(Component.text(plotInfo.getCoordinates(), NamedTextColor.AQUA))
                 .decoration(TextDecoration.ITALIC, false));
-        lore.add(Component.text("World: ", NamedTextColor.GRAY)
-                .append(Component.text(plotInfo.getWorldName(), NamedTextColor.WHITE))
-                .decoration(TextDecoration.ITALIC, false));
+//        lore.add(Component.text("World: ", NamedTextColor.GRAY)
+//                .append(Component.text(plotInfo.getWorldName(), NamedTextColor.WHITE))
+//                .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.empty());
         lore.add(Component.text("Click to view location", NamedTextColor.DARK_GRAY, TextDecoration.ITALIC));
 
