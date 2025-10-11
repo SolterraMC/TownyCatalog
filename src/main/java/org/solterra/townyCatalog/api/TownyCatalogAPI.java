@@ -13,7 +13,6 @@ import org.solterra.townyCatalog.TownyCatalog;
 import org.solterra.townyCatalog.model.PlotInfo;
 import org.solterra.townyCatalog.util.ConfigManager;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -113,13 +112,21 @@ public class TownyCatalogAPI {
         double price = plotBlock.getPlotPrice();
         TownBlockType plotType = plotBlock.getType();
         Location location = getPlotCenterLocation(plotBlock);
+
+        // Custom plot name
+        String plotName = plotBlock.getName() != null ? plotBlock.getName() : "";
+
+        if (!getConfig().showCustomPlotNames()) {
+            plotName = "";
+        }
+
         int plotX = plotBlock.getX();
         int plotZ = plotBlock.getZ();
         String worldName = plotBlock.getWorldCoord().getBukkitWorld() != null
                 ? plotBlock.getWorldCoord().getBukkitWorld().getName()
                 : "Unknown";
 
-        return new PlotInfo(plotBlock, townName, price, plotType, location, plotX, plotZ, worldName);
+        return new PlotInfo(plotBlock,plotName, townName, price, plotType, location, plotX, plotZ, worldName);
     }
 
     /**
