@@ -3,7 +3,6 @@ version: ${version}
 main: org.solterra.townyCatalog.TownyCatalog
 api-version: '1.21'
 depend: [Towny]
-softdepend: [Vault]
 description: A GUI catalog system for browsing and purchasing Towny plots
 author: Solterra
 

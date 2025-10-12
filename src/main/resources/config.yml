@@ -1,7 +1,7 @@
 # TownyCatalog Configuration
 
 plots:
-  # Show names set through /plot set name . If false, Plot name will be shownn as "TownName Plot"
+  # Show names set through /plot set name . If false, Plot name will be shown as "TownName Plot"
   show-custom-plot-name: true
 
 # Filtering Options
