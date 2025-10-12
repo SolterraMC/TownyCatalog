@@ -9,9 +9,9 @@ import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownBlockType;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.solterra.townyCatalog.TownyCatalog;
+import org.bukkit.entity.Player;
 import org.solterra.townyCatalog.model.PlotInfo;
-import org.solterra.townyCatalog.util.ConfigManager;
+import org.solterra.townyCatalog.util.Config;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,75 +24,71 @@ import java.util.stream.Collectors;
 public class TownyCatalogAPI {
 
     /**
-     * Gets the configuration manager
-     * @return ConfigManager instance
-     */
-    private static ConfigManager getConfig() {
-        return TownyCatalog.getInstance().getConfigManager();
-    }
-
-    /**
-     * Checks if a town has any plots for sale that the resident can afford
+     * Checks if a town has any plots for sale that the player can afford
      *
-     * @param town     The town to check
-     * @param resident The resident checking affordability
+     * @param town   The town to check
+     * @param player The player checking affordability
      * @return true if there are affordable plots for sale
      */
-    public static boolean hasPurchasablePlots(Town town, Resident resident) {
+    public static boolean hasPurchasablePlots(Town town, Player player) {
         return town.getTownBlocks().stream()
                 .filter(TownBlock::isForSale)
-                .anyMatch(plotBlock -> canAffordPlot(plotBlock.getPlotPrice(), resident));
+                .anyMatch(plotBlock -> canAffordPlot(plotBlock.getPlotPrice(), player));
     }
 
     /**
-     * Checks if a resident can afford a given price
+     * Checks if a player can afford a given price using Towny's economy system
      *
      * @param plotPrice The price to check
-     * @param resident  The resident to check
-     * @return true if the resident can afford the price
+     * @param player    The player to check
+     * @return true if the player can afford the price
      */
-    public static boolean canAffordPlot(double plotPrice, Resident resident) {
+    public static boolean canAffordPlot(double plotPrice, Player player) {
+        Resident resident = TownyAPI.getInstance().getResident(player);
+        if (resident == null) {
+            // Non-Towny residents cannot afford plots
+            return false;
+        }
+        // If economy is not active, assume player can afford
         return !TownyEconomyHandler.isActive() || resident.getAccount().canPayFromHoldings(plotPrice);
     }
 
     /**
      * Gets all plots for sale in a town
      *
-     * @param town     The town to search
-     * @param resident The resident checking affordability
+     * @param town   The town to search
+     * @param player The player checking affordability
      * @return List of all affordable plots
      */
-    public static List<TownBlock> getAllPurchasablePlotsIn(Town town, Resident resident) {
-        ConfigManager config = getConfig();
+    public static List<TownBlock> getAllPurchasablePlotsIn(Town town, Player player) {
         return town.getTownBlocks().stream()
                 .filter(TownBlock::isForSale)
                 .filter(plotBlock -> {
                     // Filter by residential type if configured
-                    if (config.residentialOnly() && !plotBlock.getType().equals(TownBlockType.RESIDENTIAL)) {
+                    if (Config.RESIDENTIAL_ONLY && !plotBlock.getType().equals(TownBlockType.RESIDENTIAL)) {
                         return false;
                     }
                     // Filter by affordability if configured
-                    return !config.requireAffordable() || canAffordPlot(plotBlock.getPlotPrice(), resident);
+                    return !Config.REQUIRE_AFFORDABLE || canAffordPlot(plotBlock.getPlotPrice(), player);
                 })
                 .collect(Collectors.toList());
     }
 
     /**
-     * Gets all towns that have plots the resident can afford
+     * Gets all towns that have plots the player can afford
      *
-     * @param resident The resident to check
+     * @param player The player to check
      * @return List of towns with affordable plots
      */
-    public static List<Town> getTownsWithPurchasablePlots(Resident resident) {
-        ConfigManager config = getConfig();
+    public static List<Town> getTownsWithPurchasablePlots(Player player) {
         return TownyAPI.getInstance().getTowns().stream()
                 .filter(town -> {
                     // Filter by town open status if configured
-                    if (config.requireTownOpen() && !town.isOpen()) {
+                    if (Config.REQUIRE_TOWN_OPEN && !town.isOpen()) {
                         return false;
                     }
                     // Filter by town public status if configured
-                    return (!config.requireTownPublic() || town.isPublic()) && hasPurchasablePlots(town, resident);
+                    return (!Config.REQUIRE_TOWN_PUBLIC || town.isPublic()) && hasPurchasablePlots(town, player);
                 })
                 .collect(Collectors.toList());
     }
@@ -116,7 +112,7 @@ public class TownyCatalogAPI {
         // Custom plot name
         String plotName = plotBlock.getName() != null ? plotBlock.getName() : "";
 
-        if (!getConfig().showCustomPlotNames()) {
+        if (!Config.SHOW_CUSTOM_PLOT_NAMES) {
             plotName = "";
         }
 

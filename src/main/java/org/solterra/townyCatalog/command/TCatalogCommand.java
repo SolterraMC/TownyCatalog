@@ -11,7 +11,7 @@ import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.solterra.townyCatalog.TownyCatalog;
-import org.solterra.townyCatalog.util.ConfigManager;
+import org.solterra.townyCatalog.util.Config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +63,7 @@ public class TCatalogCommand implements CommandExecutor, TabCompleter {
         }
 
         try {
-            plugin.getConfigManager().reload();
+            Config.reload(plugin);
             sender.sendMessage(Component.text("TownyCatalog configuration reloaded successfully!", NamedTextColor.GREEN));
         } catch (Exception e) {
             sender.sendMessage(Component.text("Failed to reload configuration: " + e.getMessage(), NamedTextColor.RED));
@@ -78,8 +78,6 @@ public class TCatalogCommand implements CommandExecutor, TabCompleter {
      * Handles the info subcommand
      */
     private void handleInfo(CommandSender sender) {
-        ConfigManager config = plugin.getConfigManager();
-
         sender.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.DARK_GREEN));
         sender.sendMessage(Component.text("TownyCatalog", NamedTextColor.GOLD, TextDecoration.BOLD)
                 .append(Component.text(" v" + plugin.getPluginMeta().getVersion(), NamedTextColor.YELLOW)));
@@ -87,10 +85,10 @@ public class TCatalogCommand implements CommandExecutor, TabCompleter {
 
         // Current filter settings
         sender.sendMessage(Component.text("Filter Settings:", NamedTextColor.AQUA, TextDecoration.BOLD));
-        sender.sendMessage(formatConfigLine("Require Town Open", config.requireTownOpen()));
-        sender.sendMessage(formatConfigLine("Require Town Public", config.requireTownPublic()));
-        sender.sendMessage(formatConfigLine("Require Affordable", config.requireAffordable()));
-        sender.sendMessage(formatConfigLine("Residential Only", config.residentialOnly()));
+        sender.sendMessage(formatConfigLine("Require Town Open", Config.REQUIRE_TOWN_OPEN));
+        sender.sendMessage(formatConfigLine("Require Town Public", Config.REQUIRE_TOWN_PUBLIC));
+        sender.sendMessage(formatConfigLine("Require Affordable", Config.REQUIRE_AFFORDABLE));
+        sender.sendMessage(formatConfigLine("Residential Only", Config.RESIDENTIAL_ONLY));
 
         sender.sendMessage(Component.empty());
 

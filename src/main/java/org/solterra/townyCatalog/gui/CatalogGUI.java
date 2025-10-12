@@ -1,7 +1,5 @@
 package org.solterra.townyCatalog.gui;
 
-import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.kyori.adventure.text.Component;
@@ -43,14 +41,8 @@ public class CatalogGUI {
      * @param town   The town to show plots from
      */
     public static void openCatalog(Player player, Town town) {
-        Resident resident = TownyAPI.getInstance().getResident(player);
-        if (resident == null) {
-            player.sendMessage(Component.text("You must be a Towny resident to use the catalog!", NamedTextColor.RED));
-            return;
-        }
-
         // Get purchasable plots for the player from this town
-        List<TownBlock> plots = TownyCatalogAPI.getAllPurchasablePlotsIn(town, resident);
+        List<TownBlock> plots = TownyCatalogAPI.getAllPurchasablePlotsIn(town, player);
 
         if (plots.isEmpty()) {
             player.sendMessage(Component.text("No plots available for purchase in this town!", NamedTextColor.YELLOW));
@@ -103,7 +95,7 @@ public class CatalogGUI {
             PlotInfo plotInfo = TownyCatalogAPI.getPlotDisplayInfo(plot);
 
             if (plotInfo != null) {
-                ItemStack plotItem = createPlotItem(plotInfo);
+                ItemStack plotItem = createPlotItem(plotInfo, holder.getPlayer());
                 inventory.setItem(i - startIndex, plotItem);
             }
         }
@@ -140,9 +132,10 @@ public class CatalogGUI {
      * Creates an ItemStack representing a plot
      *
      * @param plotInfo The plot information
+     * @param player   The player viewing the catalog
      * @return ItemStack with plot details
      */
-    private static ItemStack createPlotItem(PlotInfo plotInfo) {
+    private static ItemStack createPlotItem(PlotInfo plotInfo, Player player) {
         ItemStack item = new ItemStack(Material.GRASS_BLOCK);
         ItemMeta meta = item.getItemMeta();
 
@@ -150,11 +143,15 @@ public class CatalogGUI {
         meta.displayName(Component.text(plotInfo.getPlotName(), NamedTextColor.GREEN)
                 .decoration(TextDecoration.ITALIC, false));
 
+        // Check if player can afford the plot
+        boolean canAfford = TownyCatalogAPI.canAffordPlot(plotInfo.getPrice(), player);
+        NamedTextColor priceColor = canAfford ? NamedTextColor.GOLD : NamedTextColor.RED;
+
         // Create lore
         List<Component> lore = new ArrayList<>();
         lore.add(Component.empty());
         lore.add(Component.text("Price: ", NamedTextColor.GRAY)
-                .append(Component.text("$" + plotInfo.getFormattedPrice(), NamedTextColor.GOLD))
+                .append(Component.text("$" + plotInfo.getFormattedPrice(), priceColor))
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("Type: ", NamedTextColor.GRAY)
                 .append(Component.text(plotInfo.getPlotType().toString(), NamedTextColor.YELLOW))

@@ -20,10 +20,12 @@ public class CatalogInventoryHolder implements InventoryHolder {
     private final UUID playerUUID;
     private final List<TownBlock> allPlots;
     private final Town selectedTown;
+    private final Player player;
     private int currentPage;
 
     public CatalogInventoryHolder(Player player, List<TownBlock> allPlots, Town selectedTown) {
         this.playerUUID = player.getUniqueId();
+        this.player = player;
         this.allPlots = allPlots;
         this.selectedTown = selectedTown;
         this.currentPage = 0;
@@ -65,5 +67,9 @@ public class CatalogInventoryHolder implements InventoryHolder {
 
     public boolean hasPreviousPage() {
         return currentPage > 0;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

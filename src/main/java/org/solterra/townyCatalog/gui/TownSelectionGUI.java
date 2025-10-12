@@ -1,7 +1,5 @@
 package org.solterra.townyCatalog.gui;
 
-import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.kyori.adventure.text.Component;
@@ -36,14 +34,8 @@ public class TownSelectionGUI {
      * @param player The player to show the town selection to
      */
     public static void openTownSelection(Player player) {
-        Resident resident = TownyAPI.getInstance().getResident(player);
-        if (resident == null) {
-            player.sendMessage(Component.text("You must be a Towny resident to use the catalog!", NamedTextColor.RED));
-            return;
-        }
-
         // Get all towns with purchasable plots
-        List<Town> towns = TownyCatalogAPI.getTownsWithPurchasablePlots(resident);
+        List<Town> towns = TownyCatalogAPI.getTownsWithPurchasablePlots(player);
 
         if (towns.isEmpty()) {
             player.sendMessage(Component.text("No towns have plots available for purchase!", NamedTextColor.YELLOW));
@@ -94,13 +86,10 @@ public class TownSelectionGUI {
         Player player = Bukkit.getPlayer(holder.getPlayerUUID());
         if (player == null) return;
 
-        Resident resident = TownyAPI.getInstance().getResident(player);
-        if (resident == null) return;
-
         // Add town items
         for (int i = startIndex; i < endIndex; i++) {
             Town town = allTowns.get(i);
-            ItemStack townItem = createTownItem(town, resident);
+            ItemStack townItem = createTownItem(town, player);
             inventory.setItem(i - startIndex, townItem);
         }
 
@@ -130,11 +119,11 @@ public class TownSelectionGUI {
     /**
      * Creates an ItemStack representing a town
      *
-     * @param town     The town
-     * @param resident The resident viewing the catalog
+     * @param town   The town
+     * @param player The player viewing the catalog
      * @return ItemStack with town details
      */
-    private static ItemStack createTownItem(Town town, Resident resident) {
+    private static ItemStack createTownItem(Town town, Player player) {
         ItemStack item = new ItemStack(Material.BEACON);
         ItemMeta meta = item.getItemMeta();
 
@@ -144,7 +133,7 @@ public class TownSelectionGUI {
                 .decoration(TextDecoration.ITALIC, false));
 
         // Get plot information
-        List<TownBlock> plots = TownyCatalogAPI.getAllPurchasablePlotsIn(town, resident);
+        List<TownBlock> plots = TownyCatalogAPI.getAllPurchasablePlotsIn(town, player);
         int plotCount = plots.size();
 
         // Calculate price range

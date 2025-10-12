@@ -58,4 +58,8 @@ public class PlotInfo {
     public String getCoordinates() {
         return String.format("X: %d, Z: %d", plotX, plotZ);
     }
+
+    public double getPrice() {
+        return price;
+    }
 }
