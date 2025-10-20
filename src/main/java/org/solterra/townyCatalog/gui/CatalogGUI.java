@@ -13,7 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.solterra.townyCatalog.api.TownyCatalogAPI;
-import org.solterra.townyCatalog.model.PlotInfo;
 import org.solterra.townyCatalog.util.GUIUtils;
 
 import java.util.ArrayList;
@@ -23,16 +22,6 @@ import java.util.List;
  * Manages the Catalog GUI display and interaction
  */
 public class CatalogGUI {
-
-    private static final int INVENTORY_SIZE = 54;
-    private static final int PLOTS_PER_PAGE = 45;
-    private static final int BACK_BUTTON_SLOT = 45;
-    private static final int TOWN_INFO_SLOT = 46;
-    private static final int TAX_INFO_SLOT = 47;
-    private static final int PREVIOUS_PAGE_SLOT = 48;
-    private static final int INFO_SLOT = 49;
-    private static final int NEXT_PAGE_SLOT = 50;
-    private static final int MAYOR_HEAD_SLOT = 53;
 
     /**
      * Opens the catalog GUI for a player showing plots from a specific town
@@ -58,7 +47,7 @@ public class CatalogGUI {
         // Create inventory with custom holder
         Inventory inventory = Bukkit.createInventory(
                 holder,
-                INVENTORY_SIZE,
+                GUISlots.INVENTORY_SIZE,
                 Component.text(town.getName() + " - Plots", NamedTextColor.DARK_GREEN, TextDecoration.BOLD)
         );
 
@@ -86,28 +75,24 @@ public class CatalogGUI {
         inventory.clear();
 
         // Calculate start and end indices
-        int startIndex = page * PLOTS_PER_PAGE;
-        int endIndex = Math.min(startIndex + PLOTS_PER_PAGE, allPlots.size());
+        int startIndex = page * GUISlots.ITEMS_PER_PAGE;
+        int endIndex = Math.min(startIndex + GUISlots.ITEMS_PER_PAGE, allPlots.size());
 
         // Add plot items (fill slots 0-44)
         for (int i = startIndex; i < endIndex; i++) {
             TownBlock plot = allPlots.get(i);
-            PlotInfo plotInfo = TownyCatalogAPI.getPlotDisplayInfo(plot);
-
-            if (plotInfo != null) {
-                ItemStack plotItem = createPlotItem(plotInfo, holder.getPlayer());
-                inventory.setItem(i - startIndex, plotItem);
-            }
+            ItemStack plotItem = createPlotItem(plot, holder.getPlayer());
+            inventory.setItem(i - startIndex, plotItem);
         }
 
         // Add bottom row items
-        inventory.setItem(BACK_BUTTON_SLOT, createBackButton());
-        inventory.setItem(TOWN_INFO_SLOT, createTownInfoItem(holder.getSelectedTown()));
-        inventory.setItem(TAX_INFO_SLOT, createTaxInfoItem(holder.getSelectedTown()));
-        inventory.setItem(MAYOR_HEAD_SLOT, createMayorHead(holder.getSelectedTown()));
+        inventory.setItem(GUISlots.CATALOG_BACK_BUTTON, createBackButton());
+        inventory.setItem(GUISlots.CATALOG_TOWN_INFO, createTownInfoItem(holder.getSelectedTown()));
+        inventory.setItem(GUISlots.CATALOG_TAX_INFO, createTaxInfoItem(holder.getSelectedTown()));
+        inventory.setItem(GUISlots.CATALOG_MAYOR_HEAD, createMayorHead(holder.getSelectedTown()));
         // Add navigation items
         if (holder.hasPreviousPage()) {
-            inventory.setItem(PREVIOUS_PAGE_SLOT, GUIUtils.createNavigationItem(
+            inventory.setItem(GUISlots.CATALOG_PREVIOUS_PAGE, GUIUtils.createNavigationItem(
                     Material.ARROW,
                     "Previous Page",
                     "Click to go to page " + page
@@ -115,10 +100,10 @@ public class CatalogGUI {
         }
 
         // Add info item
-        inventory.setItem(INFO_SLOT, createInfoItem(page + 1, holder.getTotalPages(), allPlots.size()));
+        inventory.setItem(GUISlots.CATALOG_INFO, createInfoItem(page + 1, holder.getTotalPages(), allPlots.size()));
 
         if (holder.hasNextPage()) {
-            inventory.setItem(NEXT_PAGE_SLOT, GUIUtils.createNavigationItem(
+            inventory.setItem(GUISlots.CATALOG_NEXT_PAGE, GUIUtils.createNavigationItem(
                     Material.ARROW,
                     "Next Page",
                     "Click to go to page " + (page + 2)
@@ -131,37 +116,35 @@ public class CatalogGUI {
     /**
      * Creates an ItemStack representing a plot
      *
-     * @param plotInfo The plot information
-     * @param player   The player viewing the catalog
+     * @param plot   The plot block
+     * @param player The player viewing the catalog
      * @return ItemStack with plot details
      */
-    private static ItemStack createPlotItem(PlotInfo plotInfo, Player player) {
+    private static ItemStack createPlotItem(TownBlock plot, Player player) {
         ItemStack item = new ItemStack(Material.GRASS_BLOCK);
         ItemMeta meta = item.getItemMeta();
 
+        String townName = plot.getTownOrNull() != null ? plot.getTownOrNull().getName() : "Unknown";
+        String plotName = GUIUtils.getPlotDisplayName(plot, townName);
+
         // Set display name
-        meta.displayName(Component.text(plotInfo.getPlotName(), NamedTextColor.GREEN)
-                .decoration(TextDecoration.ITALIC, false));
+        meta.displayName(GUIUtils.noItalic(plotName, NamedTextColor.GREEN));
 
         // Check if player can afford the plot
-        boolean canAfford = TownyCatalogAPI.canAffordPlot(plotInfo.getPrice(), player);
-        NamedTextColor priceColor = canAfford ? NamedTextColor.GOLD : NamedTextColor.RED;
+        boolean canAfford = TownyCatalogAPI.canAffordPlot(plot.getPlotPrice(), player);
 
         // Create lore
         List<Component> lore = new ArrayList<>();
         lore.add(Component.empty());
         lore.add(Component.text("Price: ", NamedTextColor.GRAY)
-                .append(Component.text("$" + plotInfo.getFormattedPrice(), priceColor))
+                .append(GUIUtils.formatPrice(plot.getPlotPrice(), canAfford))
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("Type: ", NamedTextColor.GRAY)
-                .append(Component.text(plotInfo.getPlotType().toString(), NamedTextColor.YELLOW))
+                .append(Component.text(plot.getType().toString(), NamedTextColor.YELLOW))
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.text("Location: ", NamedTextColor.GRAY)
-                .append(Component.text(plotInfo.getCoordinates(), NamedTextColor.AQUA))
+                .append(GUIUtils.formatCoordinates(plot.getX(), plot.getZ()))
                 .decoration(TextDecoration.ITALIC, false));
-//        lore.add(Component.text("World: ", NamedTextColor.GRAY)
-//                .append(Component.text(plotInfo.getWorldName(), NamedTextColor.WHITE))
-//                .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.empty());
         lore.add(Component.text("Click to view location", NamedTextColor.DARK_GRAY, TextDecoration.ITALIC));
 
@@ -357,18 +340,18 @@ public class CatalogGUI {
      */
     public static TownBlock getPlotFromSlot(CatalogInventoryHolder holder, int slot) {
         // Skip special slots in bottom row
-        if (slot == BACK_BUTTON_SLOT || slot == MAYOR_HEAD_SLOT ||
-            slot == PREVIOUS_PAGE_SLOT || slot == TOWN_INFO_SLOT ||
-            slot == INFO_SLOT || slot == TAX_INFO_SLOT || slot == NEXT_PAGE_SLOT) {
+        if (slot == GUISlots.CATALOG_BACK_BUTTON || slot == GUISlots.CATALOG_MAYOR_HEAD ||
+            slot == GUISlots.CATALOG_PREVIOUS_PAGE || slot == GUISlots.CATALOG_TOWN_INFO ||
+            slot == GUISlots.CATALOG_INFO || slot == GUISlots.CATALOG_TAX_INFO || slot == GUISlots.CATALOG_NEXT_PAGE) {
             return null;
         }
 
         // Only slots 0-44 are valid for plots
-        if (slot < 0 || slot >= PLOTS_PER_PAGE) {
+        if (slot < 0 || slot >= GUISlots.ITEMS_PER_PAGE) {
             return null;
         }
 
-        int plotIndex = (holder.getCurrentPage() * PLOTS_PER_PAGE) + slot;
+        int plotIndex = (holder.getCurrentPage() * GUISlots.ITEMS_PER_PAGE) + slot;
         List<TownBlock> plots = holder.getAllPlots();
 
         if (plotIndex >= plots.size()) {

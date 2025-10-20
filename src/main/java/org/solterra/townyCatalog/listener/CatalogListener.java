@@ -12,13 +12,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.solterra.townyCatalog.api.TownyCatalogAPI;
-import org.solterra.townyCatalog.gui.CatalogGUI;
-import org.solterra.townyCatalog.gui.CatalogInventoryHolder;
-import org.solterra.townyCatalog.gui.TownSelectionGUI;
-import org.solterra.townyCatalog.gui.TownSelectionHolder;
+import org.solterra.townyCatalog.gui.*;
 
 /**
  * Listens for inventory click events in the Catalog GUI
+ * Uses centralized slot constants and action handlers for cleaner code
  */
 public class CatalogListener implements Listener {
 
@@ -53,84 +51,65 @@ public class CatalogListener implements Listener {
 
     /**
      * Handles clicks in the town selection inventory
-     *
-     * @param player     The player who clicked
-     * @param holder     The town selection holder
-     * @param slot       The clicked slot
      */
     private void handleTownSelectionClick(Player player, TownSelectionHolder holder, int slot) {
-        // Handle navigation clicks
-        if (slot == 45 && holder.hasPreviousPage()) {
+        // Handle previous page navigation
+        if (slot == GUISlots.TOWN_SELECTION_PREVIOUS_PAGE && holder.hasPreviousPage()) {
             TownSelectionGUI.populatePage(holder, holder.getCurrentPage() - 1);
-            player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
+            playClickSound(player);
             return;
         }
 
-        if (slot == 53 && holder.hasNextPage()) {
+        // Handle next page navigation
+        if (slot == GUISlots.TOWN_SELECTION_NEXT_PAGE && holder.hasNextPage()) {
             TownSelectionGUI.populatePage(holder, holder.getCurrentPage() + 1);
-            player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
+            playClickSound(player);
             return;
         }
 
-        if (slot == 49) {
-            // Info slot - do nothing
+        // Handle info slot (no action)
+        if (slot == GUISlots.TOWN_SELECTION_INFO) {
             return;
         }
 
-        // Handle town clicks
+        // Handle town selection
         Town town = TownSelectionGUI.getTownFromSlot(holder, slot);
         if (town != null) {
-            player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
+            playClickSound(player);
             CatalogGUI.openCatalog(player, town);
         }
     }
 
     /**
      * Handles clicks in the catalog (plot display) inventory
-     *
-     * @param player     The player who clicked
-     * @param holder     The catalog holder
-     * @param slot       The clicked slot
      */
     private void handleCatalogClick(Player player, CatalogInventoryHolder holder, int slot) {
-        // Handle back button (slot 45)
-        if (slot == 45) {
-            player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
+        // Handle back button
+        if (slot == GUISlots.CATALOG_BACK_BUTTON) {
+            playClickSound(player);
             TownSelectionGUI.openTownSelection(player);
             return;
         }
 
-        // Handle mayor head (slot 46) - decorative only
-        if (slot == 46) {
-            return;
-        }
-
-        // Handle previous page navigation (slot 47)
-        if (slot == 47 && holder.hasPreviousPage()) {
+        // Handle previous page navigation
+        if (slot == GUISlots.CATALOG_PREVIOUS_PAGE && holder.hasPreviousPage()) {
             CatalogGUI.populatePage(holder, holder.getCurrentPage() - 1);
-            player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
+            playClickSound(player);
             return;
         }
 
-        // Handle town info (slot 48) - informational only
-        if (slot == 48) {
-            return;
-        }
-
-        // Handle catalog info (slot 49) - informational only
-        if (slot == 49) {
-            return;
-        }
-
-        // Handle tax info (slot 50) - informational only
-        if (slot == 50) {
-            return;
-        }
-
-        // Handle next page navigation (slot 51)
-        if (slot == 51 && holder.hasNextPage()) {
+        // Handle next page navigation
+        if (slot == GUISlots.CATALOG_NEXT_PAGE && holder.hasNextPage()) {
             CatalogGUI.populatePage(holder, holder.getCurrentPage() + 1);
-            player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
+            playClickSound(player);
+            return;
+        }
+
+        // Handle info slots (no action) - consolidated check
+        if (slot == GUISlots.CATALOG_TOWN_INFO ||
+            slot == GUISlots.CATALOG_INFO ||
+            slot == GUISlots.CATALOG_TAX_INFO ||
+            slot == GUISlots.CATALOG_MAYOR_HEAD) {
             return;
         }
 
@@ -143,9 +122,6 @@ public class CatalogListener implements Listener {
 
     /**
      * Handles when a player clicks on a plot item
-     *
-     * @param player The player who clicked
-     * @param plot   The plot that was clicked
      */
     private void handlePlotClick(Player player, TownBlock plot) {
         Location plotLocation = TownyCatalogAPI.getPlotCenterLocation(plot);
@@ -175,5 +151,12 @@ public class CatalogListener implements Listener {
 
         // Close the inventory
         player.closeInventory();
+    }
+
+    /**
+     * Plays a click sound for the player
+     */
+    private void playClickSound(Player player) {
+        player.playSound(player.getLocation(), "ui.button.click", 1.0f, 1.0f);
     }
 }

@@ -10,7 +10,6 @@ import com.palmergames.bukkit.towny.object.TownBlockType;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.solterra.townyCatalog.model.PlotInfo;
 import org.solterra.townyCatalog.util.Config;
 
 import java.util.Comparator;
@@ -25,12 +24,13 @@ public class TownyCatalogAPI {
 
     /**
      * Checks if a town has any plots for sale that the player can afford
+     * Package-private as it's only used internally
      *
      * @param town   The town to check
      * @param player The player checking affordability
      * @return true if there are affordable plots for sale
      */
-    public static boolean hasPurchasablePlots(Town town, Player player) {
+    static boolean hasPurchasablePlots(Town town, Player player) {
         return town.getTownBlocks().stream()
                 .filter(TownBlock::isForSale)
                 .anyMatch(plotBlock -> canAffordPlot(plotBlock.getPlotPrice(), player));
@@ -94,39 +94,7 @@ public class TownyCatalogAPI {
     }
 
     /**
-     * Converts a TownBlock to a PlotInfo object for GUI display
-     *
-     * @param plotBlock The TownBlock to convert
-     * @return PlotInfo object with display data
-     */
-    public static PlotInfo getPlotDisplayInfo(TownBlock plotBlock) {
-        if (plotBlock == null) {
-            return null;
-        }
-
-        String townName = plotBlock.getTownOrNull() != null ? plotBlock.getTownOrNull().getName() : "Unknown";
-        double price = plotBlock.getPlotPrice();
-        TownBlockType plotType = plotBlock.getType();
-        Location location = getPlotCenterLocation(plotBlock);
-
-        // Custom plot name
-        String plotName = plotBlock.getName() != null ? plotBlock.getName() : "";
-
-        if (!Config.SHOW_CUSTOM_PLOT_NAMES) {
-            plotName = "";
-        }
-
-        int plotX = plotBlock.getX();
-        int plotZ = plotBlock.getZ();
-        String worldName = plotBlock.getWorldCoord().getBukkitWorld() != null
-                ? plotBlock.getWorldCoord().getBukkitWorld().getName()
-                : "Unknown";
-
-        return new PlotInfo(plotBlock,plotName, townName, price, plotType, location, plotX, plotZ, worldName);
-    }
-
-    /**
-     * Gets the center location of a plot for display purposes
+     * Gets the center location of a plot for teleportation and display purposes
      *
      * @param plotBlock The plot to get the location for
      * @return Location at the center of the plot

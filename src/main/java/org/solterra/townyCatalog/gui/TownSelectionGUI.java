@@ -22,12 +22,6 @@ import java.util.List;
  */
 public class TownSelectionGUI {
 
-    private static final int INVENTORY_SIZE = 54;
-    private static final int TOWNS_PER_PAGE = 45;
-    private static final int PREVIOUS_PAGE_SLOT = 48;
-    private static final int INFO_SLOT = 49;
-    private static final int NEXT_PAGE_SLOT = 50;
-
     /**
      * Opens the town selection GUI for a player
      *
@@ -51,7 +45,7 @@ public class TownSelectionGUI {
         // Create inventory with custom holder
         Inventory inventory = Bukkit.createInventory(
                 holder,
-                INVENTORY_SIZE,
+                GUISlots.INVENTORY_SIZE,
                 Component.text("Select a Town", NamedTextColor.DARK_GREEN, TextDecoration.BOLD)
         );
 
@@ -79,11 +73,11 @@ public class TownSelectionGUI {
         inventory.clear();
 
         // Calculate start and end indices
-        int startIndex = page * TOWNS_PER_PAGE;
-        int endIndex = Math.min(startIndex + TOWNS_PER_PAGE, allTowns.size());
+        int startIndex = page * GUISlots.ITEMS_PER_PAGE;
+        int endIndex = Math.min(startIndex + GUISlots.ITEMS_PER_PAGE, allTowns.size());
 
-        // Get player to check affordability
-        Player player = Bukkit.getPlayer(holder.getPlayerUUID());
+        // Get player from holder
+        Player player = holder.getPlayer();
         if (player == null) return;
 
         // Add town items
@@ -95,7 +89,7 @@ public class TownSelectionGUI {
 
         // Add navigation items
         if (holder.hasPreviousPage()) {
-            inventory.setItem(PREVIOUS_PAGE_SLOT, GUIUtils.createNavigationItem(
+            inventory.setItem(GUISlots.TOWN_SELECTION_PREVIOUS_PAGE, GUIUtils.createNavigationItem(
                     Material.ARROW,
                     "Previous Page",
                     "Click to go to page " + page
@@ -103,10 +97,10 @@ public class TownSelectionGUI {
         }
 
         // Add info item
-        inventory.setItem(INFO_SLOT, createInfoItem(page + 1, holder.getTotalPages(), allTowns.size()));
+        inventory.setItem(GUISlots.TOWN_SELECTION_INFO, createInfoItem(page + 1, holder.getTotalPages(), allTowns.size()));
 
         if (holder.hasNextPage()) {
-            inventory.setItem(NEXT_PAGE_SLOT, GUIUtils.createNavigationItem(
+            inventory.setItem(GUISlots.TOWN_SELECTION_NEXT_PAGE, GUIUtils.createNavigationItem(
                     Material.ARROW,
                     "Next Page",
                     "Click to go to page " + (page + 2)
@@ -214,11 +208,11 @@ public class TownSelectionGUI {
      * @return The Town at that slot, or null
      */
     public static Town getTownFromSlot(TownSelectionHolder holder, int slot) {
-        if (slot < 0 || slot >= TOWNS_PER_PAGE) {
+        if (slot < 0 || slot >= GUISlots.ITEMS_PER_PAGE) {
             return null;
         }
 
-        int townIndex = (holder.getCurrentPage() * TOWNS_PER_PAGE) + slot;
+        int townIndex = (holder.getCurrentPage() * GUISlots.ITEMS_PER_PAGE) + slot;
         List<Town> towns = holder.getAllTowns();
 
         if (townIndex >= towns.size()) {
