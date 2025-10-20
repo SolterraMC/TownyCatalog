@@ -6,12 +6,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.solterra.townyCatalog.command.CatalogCommand;
 import org.solterra.townyCatalog.command.TCatalogCommand;
 import org.solterra.townyCatalog.listener.CatalogListener;
-import org.solterra.townyCatalog.util.ConfigManager;
+import org.solterra.townyCatalog.util.Config;
 
 public final class TownyCatalog extends JavaPlugin {
 
     private static TownyCatalog instance;
-    private ConfigManager configManager;
 
     @Override
     public void onEnable() {
@@ -26,7 +25,7 @@ public final class TownyCatalog extends JavaPlugin {
         }
 
         // Load configuration
-        configManager = new ConfigManager(this);
+        Config.init(this);
 
         // Register event listener
         getServer().getPluginManager().registerEvents(new CatalogListener(), this);
@@ -57,12 +56,5 @@ public final class TownyCatalog extends JavaPlugin {
      */
     public static TownyCatalog getInstance() {
         return instance;
-    }
-
-    /**
-     * @return The configuration manager
-     */
-    public ConfigManager getConfigManager() {
-        return configManager;
     }
 }

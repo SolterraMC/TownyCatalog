@@ -1,7 +1,5 @@
 package org.solterra.townyCatalog.gui;
 
-import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import net.kyori.adventure.text.Component;
@@ -24,26 +22,14 @@ import java.util.List;
  */
 public class TownSelectionGUI {
 
-    private static final int INVENTORY_SIZE = 54;
-    private static final int TOWNS_PER_PAGE = 45;
-    private static final int PREVIOUS_PAGE_SLOT = 48;
-    private static final int INFO_SLOT = 49;
-    private static final int NEXT_PAGE_SLOT = 50;
-
     /**
      * Opens the town selection GUI for a player
      *
      * @param player The player to show the town selection to
      */
     public static void openTownSelection(Player player) {
-        Resident resident = TownyAPI.getInstance().getResident(player);
-        if (resident == null) {
-            player.sendMessage(Component.text("You must be a Towny resident to use the catalog!", NamedTextColor.RED));
-            return;
-        }
-
         // Get all towns with purchasable plots
-        List<Town> towns = TownyCatalogAPI.getTownsWithPurchasablePlots(resident);
+        List<Town> towns = TownyCatalogAPI.getTownsWithPurchasablePlots(player);
 
         if (towns.isEmpty()) {
             player.sendMessage(Component.text("No towns have plots available for purchase!", NamedTextColor.YELLOW));
@@ -59,7 +45,7 @@ public class TownSelectionGUI {
         // Create inventory with custom holder
         Inventory inventory = Bukkit.createInventory(
                 holder,
-                INVENTORY_SIZE,
+                GUISlots.INVENTORY_SIZE,
                 Component.text("Select a Town", NamedTextColor.DARK_GREEN, TextDecoration.BOLD)
         );
 
@@ -87,26 +73,23 @@ public class TownSelectionGUI {
         inventory.clear();
 
         // Calculate start and end indices
-        int startIndex = page * TOWNS_PER_PAGE;
-        int endIndex = Math.min(startIndex + TOWNS_PER_PAGE, allTowns.size());
+        int startIndex = page * GUISlots.ITEMS_PER_PAGE;
+        int endIndex = Math.min(startIndex + GUISlots.ITEMS_PER_PAGE, allTowns.size());
 
-        // Get player to check affordability
-        Player player = Bukkit.getPlayer(holder.getPlayerUUID());
+        // Get player from holder
+        Player player = holder.getPlayer();
         if (player == null) return;
-
-        Resident resident = TownyAPI.getInstance().getResident(player);
-        if (resident == null) return;
 
         // Add town items
         for (int i = startIndex; i < endIndex; i++) {
             Town town = allTowns.get(i);
-            ItemStack townItem = createTownItem(town, resident);
+            ItemStack townItem = createTownItem(town, player);
             inventory.setItem(i - startIndex, townItem);
         }
 
         // Add navigation items
         if (holder.hasPreviousPage()) {
-            inventory.setItem(PREVIOUS_PAGE_SLOT, GUIUtils.createNavigationItem(
+            inventory.setItem(GUISlots.TOWN_SELECTION_PREVIOUS_PAGE, GUIUtils.createNavigationItem(
                     Material.ARROW,
                     "Previous Page",
                     "Click to go to page " + page
@@ -114,10 +97,10 @@ public class TownSelectionGUI {
         }
 
         // Add info item
-        inventory.setItem(INFO_SLOT, createInfoItem(page + 1, holder.getTotalPages(), allTowns.size()));
+        inventory.setItem(GUISlots.TOWN_SELECTION_INFO, createInfoItem(page + 1, holder.getTotalPages(), allTowns.size()));
 
         if (holder.hasNextPage()) {
-            inventory.setItem(NEXT_PAGE_SLOT, GUIUtils.createNavigationItem(
+            inventory.setItem(GUISlots.TOWN_SELECTION_NEXT_PAGE, GUIUtils.createNavigationItem(
                     Material.ARROW,
                     "Next Page",
                     "Click to go to page " + (page + 2)
@@ -130,11 +113,11 @@ public class TownSelectionGUI {
     /**
      * Creates an ItemStack representing a town
      *
-     * @param town     The town
-     * @param resident The resident viewing the catalog
+     * @param town   The town
+     * @param player The player viewing the catalog
      * @return ItemStack with town details
      */
-    private static ItemStack createTownItem(Town town, Resident resident) {
+    private static ItemStack createTownItem(Town town, Player player) {
         ItemStack item = new ItemStack(Material.BEACON);
         ItemMeta meta = item.getItemMeta();
 
@@ -144,7 +127,7 @@ public class TownSelectionGUI {
                 .decoration(TextDecoration.ITALIC, false));
 
         // Get plot information
-        List<TownBlock> plots = TownyCatalogAPI.getAllPurchasablePlotsIn(town, resident);
+        List<TownBlock> plots = TownyCatalogAPI.getAllPurchasablePlotsIn(town, player);
         int plotCount = plots.size();
 
         // Calculate price range
@@ -225,11 +208,11 @@ public class TownSelectionGUI {
      * @return The Town at that slot, or null
      */
     public static Town getTownFromSlot(TownSelectionHolder holder, int slot) {
-        if (slot < 0 || slot >= TOWNS_PER_PAGE) {
+        if (slot < 0 || slot >= GUISlots.ITEMS_PER_PAGE) {
             return null;
         }
 
-        int townIndex = (holder.getCurrentPage() * TOWNS_PER_PAGE) + slot;
+        int townIndex = (holder.getCurrentPage() * GUISlots.ITEMS_PER_PAGE) + slot;
         List<Town> towns = holder.getAllTowns();
 
         if (townIndex >= towns.size()) {

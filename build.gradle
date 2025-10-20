@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'org.solterra'
-version = '0.1.0'
+// Version is read from gradle.properties
 
 repositories {
     mavenCentral()
